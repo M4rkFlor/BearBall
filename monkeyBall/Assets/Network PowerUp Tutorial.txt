@@ -1,0 +1,94 @@
+How to make a non player object in a networking program
+
+Use the basse that you have created in Alan and Ryan's tutorials for this one
+
+Creating the Spawner
+	1)Download and run the program given, make sure the networking works and the player can move around
+	2)Create an empty gameobject called PowerUpSpawner
+
+Creating the Prefab
+	1)Create a cube in the hierarchy and call it PowerUp
+	2)Click on the cube and add components:
+		-Network>Network Identity
+		-Network>Network Transform
+		-Physics>RigidBody
+	3)On the RigidBody component turn off the "Use Gravity" checkbox and turn on the "Is Kinematic" checkbox
+	4)Still on PowerUp go into the box collider component and check the "Is Trigger" box
+
+
+Scripts:
+Power Up Spawner Script
+	1)Create a new C# script and call it SpawnPowerUp(Make sure it is the same as shown otherwise you may run
+	  into errors)
+	2)Open the script in a compiler of your choosing
+	3)Copy this code over the entire script:
+
+	using UnityEngine;
+	using System.Collections;
+	using UnityEngine.Networking;
+
+	public class SpawnPowerUp : NetworkBehaviour {
+		public GameObject powerupPrefab;
+		float time;
+		// Use this for initialization
+		void Start () {
+		
+		}
+	
+		// Update is called once per frame
+		void Update () {
+			time += Time.deltaTime;
+			if (time > 3.0f) {
+				Cmdspawn ();
+				time = 0;
+			}
+		}
+		[Command]
+		void Cmdspawn (){
+			Vector3 position = new Vector3 (Random.Range (-Camera.main.orthographicSize, Camera.main.orthographicSize),  Random.Range (-Camera.main.orthographicSize, Camera.main.orthographicSize),0);
+			GameObject powerup = (GameObject)Instantiate (powerupPrefab, (position), Quaternion.identity);
+			NetworkServer.Spawn (powerup);
+
+		}
+	}
+
+	4)Build and Save the script then attach it to the PowerUpSpawner
+
+Power Up Script
+	1)Create a new C# script and call it PowerUp(Make sure it is the same as shown otherwise you may run
+	  into errors)
+	2)Open the script in a compiler of your choosing
+	3)Copy this code over the entire script:
+
+	using System.Collections;
+	using System.Collections.Generic;
+	using UnityEngine;
+
+	public class PowerUp : MonoBehaviour {
+
+		// Use this for initialization
+		void Start () {
+		
+		}
+	
+		// Update is called once per frame
+		void Update () {
+		
+		}
+		void OnTriggerEnter(Collider other) {
+			if (other.gameObject.tag == "Player") {
+				print ("you picked up a powerup");
+				}
+				Destroy (gameObject);
+			}
+
+		}
+	}
+	4)Build and Save the script then attach it to the PowerUp in the hierarchy
+
+Final Steps
+	1)Drag the PowerUp into the assets of the project to make it a PreFab
+	2)Click on the Power Up Spawner
+	3)On the Spawn Power Up Script drag the prefab for the PowerUp into the empty transform 
+	4)Delete the old cube in the hierarchy
+	5)Under the NetworkManager, add the PowerUp Prefab as one of the registered Network prefabs under Spawn info. 
